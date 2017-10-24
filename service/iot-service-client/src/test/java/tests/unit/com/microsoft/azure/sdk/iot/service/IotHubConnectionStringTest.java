@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JMockit.class)
 public class IotHubConnectionStringTest
 {
-    private static final String URL_API_VERSION = "api-version=2017-06-30";
+    private static final String URL_API_VERSION = "api-version=2017-07-11";
 
     // Tests_SRS_SERVICE_SDK_JAVA_IOTHUBCONNECTIONSTRING_12_001: [The function shall serialize the object properties to a string using the following format: SharedAccessKeyName@SAS.root.IotHubName]
     @Test
@@ -598,6 +598,76 @@ public class IotHubConnectionStringTest
         final String expected = "https://HOSTNAME.b.c.d/jobs/v2/query?jobType=jobType&jobStatus=jobStatus&" + URL_API_VERSION;
         final String jobType = "jobType";
         final String jobStatus = "jobStatus";
+
+        // act
+        String actual = iotHubConnectionString.getUrlQuery(jobType, jobStatus).toString();
+
+        // assert
+        assertTrue(actual.equals(expected));
+    }
+
+    // Tests_SRS_SERVICE_SDK_JAVA_IOTHUBCONNECTIONSTRING_21_024: [** If the jobType is null or empty, the function shall not include the jobType in the URL **]**
+    @Test
+    public void getUrlQueryWithoutJobTypeSucceeds() throws IOException
+    {
+        // arrange
+        final String iotHubName = "b.c.d";
+        final String hostName = "HOSTNAME." + iotHubName;
+        final String sharedAccessKeyName = "ACCESSKEYNAME";
+        final String policyName = "SharedAccessKey";
+        final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
+        final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
+        final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
+        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/query?jobStatus=jobStatus&" + URL_API_VERSION;
+        final String jobType = null;
+        final String jobStatus = "jobStatus";
+
+        // act
+        String actual = iotHubConnectionString.getUrlQuery(jobType, jobStatus).toString();
+
+        // assert
+        assertTrue(actual.equals(expected));
+    }
+
+    // Tests_SRS_SERVICE_SDK_JAVA_IOTHUBCONNECTIONSTRING_21_025: [** If the jobStatus is null or empty, the function shall not include the jobStatus in the URL **]**
+    @Test
+    public void getUrlQueryWithoutJobStatusSucceeds() throws IOException
+    {
+        // arrange
+        final String iotHubName = "b.c.d";
+        final String hostName = "HOSTNAME." + iotHubName;
+        final String sharedAccessKeyName = "ACCESSKEYNAME";
+        final String policyName = "SharedAccessKey";
+        final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
+        final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
+        final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
+        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/query?jobType=jobType&" + URL_API_VERSION;
+        final String jobType = "jobType";
+        final String jobStatus = null;
+
+        // act
+        String actual = iotHubConnectionString.getUrlQuery(jobType, jobStatus).toString();
+
+        // assert
+        assertTrue(actual.equals(expected));
+    }
+
+    // Tests_SRS_SERVICE_SDK_JAVA_IOTHUBCONNECTIONSTRING_21_024: [** If the jobType is null or empty, the function shall not include the jobType in the URL **]**
+    // Tests_SRS_SERVICE_SDK_JAVA_IOTHUBCONNECTIONSTRING_21_025: [** If the jobStatus is null or empty, the function shall not include the jobStatus in the URL **]**
+    @Test
+    public void getUrlQueryWithoutJobTypeAndJobStatusSucceeds() throws IOException
+    {
+        // arrange
+        final String iotHubName = "b.c.d";
+        final String hostName = "HOSTNAME." + iotHubName;
+        final String sharedAccessKeyName = "ACCESSKEYNAME";
+        final String policyName = "SharedAccessKey";
+        final String sharedAccessKey = "1234567890abcdefghijklmnopqrstvwxyz=";
+        final String connectionString = "HostName=" + hostName + ";SharedAccessKeyName=" + sharedAccessKeyName + ";" + policyName + "=" + sharedAccessKey;
+        final IotHubConnectionString iotHubConnectionString = IotHubConnectionStringBuilder.createConnectionString(connectionString);
+        final String expected = "https://HOSTNAME.b.c.d/jobs/v2/query?" + URL_API_VERSION;
+        final String jobType = null;
+        final String jobStatus = null;
 
         // act
         String actual = iotHubConnectionString.getUrlQuery(jobType, jobStatus).toString();
