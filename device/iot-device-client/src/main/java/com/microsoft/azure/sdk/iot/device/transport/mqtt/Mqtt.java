@@ -24,6 +24,7 @@ abstract public class Mqtt implements MqttCallback
     private DeviceClientConfig deviceClientConfig = null;
     ConcurrentLinkedQueue<Pair<String, byte[]>> allReceivedMessages;
     Object mqttLock = null;
+    boolean isUnsubscribing;
 
     // SAS token expiration check on retry
     private boolean userSpecifiedSASTokenExpiredOnRetry = false;
@@ -80,7 +81,7 @@ abstract public class Mqtt implements MqttCallback
                     /*
                     ** Codes_SRS_Mqtt_25_006: [**If the inner class MqttConnectionInfo has not been instantiated then the function shall throw IOException.**]**
                      */
-                    throw new IOException("Mqtt client should be initialised atleast once before using it");
+                    throw new IOException("Mqtt client should be initialised at least once before using it");
                 }
 
                 /*
@@ -133,7 +134,7 @@ abstract public class Mqtt implements MqttCallback
             /*
             ** SRS_Mqtt_25_011: [**If an MQTT connection is unable to be closed for any reason, the function shall throw an IOException.**]**
             */
-            throw new IOException("Unable to disconnect" + "because " + e.getMessage() );
+            throw new IOException("Unable to disconnect" + "because " + e.getMessage());
         }
     }
 
@@ -235,6 +236,9 @@ abstract public class Mqtt implements MqttCallback
     {
         synchronized (this.mqttLock)
         {
+            //Codes_SRS_Mqtt_34_056: [The function shall set the state of this object as not "unsubscribing".]
+            this.isUnsubscribing = false;
+
             try
             {
                 if (this.mqttConnection == null)
@@ -288,6 +292,8 @@ abstract public class Mqtt implements MqttCallback
      */
     void unsubscribe(String topic) throws IOException
     {
+        //Codes_SRS_Mqtt_34_055: [The function shall set the state of this object as "unsubscribing" before waiting on the mqtt lock.]
+        this.isUnsubscribing = true;
         synchronized (this.mqttLock)
         {
             try
@@ -395,7 +401,7 @@ abstract public class Mqtt implements MqttCallback
             if (this.mqttConnection != null && this.mqttConnection.getMqttAsyncClient() != null)
             {
                 int currentReconnectionAttempt = 0;
-                while (!this.mqttConnection.getMqttAsyncClient().isConnected())
+                while (!this.isUnsubscribing && !this.mqttConnection.getMqttAsyncClient().isConnected())
                 {
                     System.out.println("Lost connection to the server. Reconnecting " + currentReconnectionAttempt + " time.");
                     try

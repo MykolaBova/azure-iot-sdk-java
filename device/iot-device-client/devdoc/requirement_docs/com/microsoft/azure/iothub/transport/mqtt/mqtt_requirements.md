@@ -107,6 +107,8 @@ protected void subscribe(String topic) throws IOException;
 
 **SRS_Mqtt_25_017: [**The function shall subscribe to subscribeTopic specified to the IoT Hub given in the configuration.**]**
 
+**SRS_Mqtt_34_056: [**The function shall set the state of this object as not "unsubscribing".**]**
+
 
 ### unsubscribe
 
@@ -121,6 +123,8 @@ protected void unsubscribe(String topic) throws IOException;
 **SRS_Mqtt_25_019: [**If the unsubscribeTopic is null or empty, the function shall throw an IOException.**]**
 
 **SRS_Mqtt_25_020: [**The function shall unsubscribe from subscribeTopic specified to the IoT Hub given in the configuration.**]**
+
+**SRS_Mqtt_34_055: [**The function shall set the state of this object as "unsubscribing" before waiting on the mqtt lock.**]**
 
 
 ### receive

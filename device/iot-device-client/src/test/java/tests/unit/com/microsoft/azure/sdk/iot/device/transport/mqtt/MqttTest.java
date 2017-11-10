@@ -714,9 +714,9 @@ public class MqttTest {
         };
     }
 
-    /*
-    **Tests_SRS_Mqtt_25_017: [**The function shall subscribe to subscribeTopic specified to the IoT Hub given in the configuration.**]**
-     */
+
+    //Tests_SRS_Mqtt_25_017: [The function shall subscribe to subscribeTopic specified to the IoT Hub given in the configuration.]
+    //Tests_SRS_Mqtt_34_056: [The function shall set the state of this object as not "unsubscribing".]
     @Test
     public void subscribeSucceeds() throws IOException, MqttException
     {
@@ -735,10 +735,14 @@ public class MqttTest {
         Mqtt mockMqtt = instantiateMqtt(true);
         Deencapsulation.invoke(mockMqtt, "connect");
 
+        Deencapsulation.setField(mockMqtt, "isUnsubscribing", true);
+        
         //act
         Deencapsulation.invoke(mockMqtt, "subscribe", MOCK_PARSE_TOPIC);
 
         //assert
+        boolean isUnsubscribing = Deencapsulation.getField(mockMqtt, "isUnsubscribing");
+        assertFalse(isUnsubscribing);
         new Verifications()
         {
             {
@@ -1430,7 +1434,33 @@ public class MqttTest {
         Deencapsulation.setField(mockMqtt,"userSpecifiedSASTokenExpiredOnRetry",true);
         Deencapsulation.invoke(mockMqtt, "unsubscribe", MOCK_PARSE_TOPIC);
     }
-   
+
+    //Tests_SRS_Mqtt_34_055: [The function shall set the state of this object as "unsubscribing" before waiting on the mqtt lock.]
+    @Test
+    public void unsubscribeSetsStateAsDisconnecting() throws IOException, MqttException
+    {
+        //arrange
+        Mqtt mockMqtt = null;
+
+        baseConstructorExpectations();
+        new NonStrictExpectations()
+        {
+            {
+                mockMqttAsyncClient.isConnected();
+                result = true;
+            }
+        };
+
+        mockMqtt = instantiateMqtt(true);
+
+        //act
+        Deencapsulation.invoke(mockMqtt, "unsubscribe", new Class[] {String.class}, "");
+
+        //act
+        boolean isDisconnecting = Deencapsulation.getField(mockMqtt, "isUnsubscribing");
+        assertTrue(isDisconnecting);
+    }
+
     /*
     ** Codes_SRS_Mqtt_99_50: [**If deviceConfig is null, the function shall throw an IllegalArgumentException**]**
     */
