@@ -3,18 +3,17 @@
 
 package tests.unit.com.microsoft.azure.sdk.iot.device.auth;
 
+import com.microsoft.azure.sdk.iot.deps.util.PemUtilities;
 import com.microsoft.azure.sdk.iot.device.auth.IotHubCertificateManager;
 import com.microsoft.azure.sdk.iot.device.auth.IotHubSSLContext;
 import mockit.Deencapsulation;
 import mockit.Mocked;
 import mockit.NonStrictExpectations;
 import mockit.Verifications;
-import org.bouncycastle.openssl.PEMReader;
 import org.junit.Test;
 
 import javax.net.ssl.*;
 import java.io.IOException;
-import java.io.StringReader;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -29,19 +28,15 @@ import static org.junit.Assert.assertNotNull;
  * Unit tests for IotHubSSLContext
  * Code Coverage:
  * Methods: 100%
- * Lines: 96%
+ * Lines: 100%
  */
 public class IotHubSSLContextTest
 {
     @Mocked UUID mockUUID;
     @Mocked SecureRandom mockedSecureRandom;
 
-    @Mocked PEMReader mockedPemReaderForPublic;
-    @Mocked PEMReader mockedPemReaderForPrivate;
-    @Mocked StringReader mockStringReaderPublic;
-    @Mocked StringReader mockStringReaderPrivate;
+    @Mocked PemUtilities mockPemUtilities;
 
-    @Mocked KeyPair mockedKeyPair;
     @Mocked X509Certificate mockedX509Certificate;
     @Mocked PrivateKey mockedPrivateKey;
 
@@ -160,29 +155,11 @@ public class IotHubSSLContextTest
         new NonStrictExpectations()
         {
             {
-                new StringReader(privateKey);
-                result = mockStringReaderPrivate;
-
-                new StringReader(publicKeyCert);
-                result = mockStringReaderPublic;
-
-                new PEMReader(mockStringReaderPrivate);
-                result = mockedPemReaderForPrivate;
-
-                new PEMReader(mockStringReaderPublic);
-                result = mockedPemReaderForPublic;
-
-                mockedPemReaderForPrivate.readObject();
-                result = mockedKeyPair;
-
-                mockedPemReaderForPublic.readObject();
-                result = mockedX509Certificate;
-
-                KeyStore.getInstance(KeyStore.getDefaultType());
-                result = mockedKeyStore;
-
-                mockedKeyPair.getPrivate();
+                PemUtilities.parsePrivateKey(privateKey);
                 result = mockedPrivateKey;
+
+                PemUtilities.parsePublicKeyCertificate(publicKeyCert);
+                result = mockedX509Certificate;
 
                 KeyManagerFactory.getInstance("SunX509");
                 result = mockKeyManagerFactory;
@@ -308,29 +285,11 @@ public class IotHubSSLContextTest
                 Deencapsulation.newInstance(IotHubCertificateManager.class);
                 result = mockedCertificateManager;
 
-                new StringReader(privateKey);
-                result = mockStringReaderPrivate;
-
-                new StringReader(publicKeyCert);
-                result = mockStringReaderPublic;
-
-                new PEMReader(mockStringReaderPrivate);
-                result = mockedPemReaderForPrivate;
-
-                new PEMReader(mockStringReaderPublic);
-                result = mockedPemReaderForPublic;
-
-                mockedPemReaderForPrivate.readObject();
-                result = mockedKeyPair;
-
-                mockedPemReaderForPublic.readObject();
-                result = mockedX509Certificate;
-
-                KeyStore.getInstance(KeyStore.getDefaultType());
-                result = mockedKeyStore;
-
-                mockedKeyPair.getPrivate();
+                PemUtilities.parsePrivateKey(privateKey);
                 result = mockedPrivateKey;
+
+                PemUtilities.parsePublicKeyCertificate(publicKeyCert);
+                result = mockedX509Certificate;
 
                 KeyManagerFactory.getInstance("SunX509");
                 result = mockKeyManagerFactory;
@@ -384,7 +343,7 @@ public class IotHubSSLContextTest
 
     // Tests_SRS_IOTHUBSSLCONTEXT_34_040: [If the provided cert is a path, this function shall set the path of the default cert to the provided cert path.]
     @Test
-    public void constructorWithDefaultCertPathAndPublicCertAndPrivateKey() throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException
+    public void constructorWithDefaultCertPathAndPublicCertAndPrivateKey() throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException, CertificateException
     {
         //arrange
         final String publicKeyCert = "someCert";
@@ -398,29 +357,11 @@ public class IotHubSSLContextTest
                 Deencapsulation.newInstance(IotHubCertificateManager.class);
                 result = mockedCertificateManager;
 
-                new StringReader(privateKey);
-                result = mockStringReaderPrivate;
-
-                new StringReader(publicKeyCert);
-                result = mockStringReaderPublic;
-
-                new PEMReader(mockStringReaderPrivate);
-                result = mockedPemReaderForPrivate;
-
-                new PEMReader(mockStringReaderPublic);
-                result = mockedPemReaderForPublic;
-
-                mockedPemReaderForPrivate.readObject();
-                result = mockedKeyPair;
-
-                mockedPemReaderForPublic.readObject();
-                result = mockedX509Certificate;
-
-                KeyStore.getInstance(KeyStore.getDefaultType());
-                result = mockedKeyStore;
-
-                mockedKeyPair.getPrivate();
+                PemUtilities.parsePrivateKey(privateKey);
                 result = mockedPrivateKey;
+
+                PemUtilities.parsePublicKeyCertificate(publicKeyCert);
+                result = mockedX509Certificate;
 
                 KeyManagerFactory.getInstance("SunX509");
                 result = mockKeyManagerFactory;

@@ -3,14 +3,12 @@
 
 package com.microsoft.azure.sdk.iot.device.auth;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMReader;
+import com.microsoft.azure.sdk.iot.deps.util.PemUtilities;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
-import java.io.StringReader;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -148,24 +146,8 @@ public class IotHubSSLContext
     private void generateSSLContextWithKeys(String publicKeyCertificateString, String privateKeyString, IotHubCertificateManager certificateManager)
             throws KeyManagementException, IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException
     {
-        Security.addProvider(new BouncyCastleProvider());
-
-        PEMReader privateKeyReader = new PEMReader(new StringReader(privateKeyString));
-        PEMReader publicKeyReader = new PEMReader(new StringReader(publicKeyCertificateString));
-
-        Object possiblePrivateKey = privateKeyReader.readObject();
-        if (!(possiblePrivateKey instanceof KeyPair))
-        {
-            throw new CertificateException("Unexpected format for private key");
-        }
-        KeyPair certPairWithPrivate = (KeyPair) possiblePrivateKey;
-
-        Object possiblePublicKey = publicKeyReader.readObject();
-        if (!(possiblePublicKey instanceof X509Certificate))
-        {
-            throw new CertificateException("Unexpected format for public key certificate");
-        }
-        X509Certificate certPairWithPublic = (X509Certificate) possiblePublicKey;
+        PrivateKey privateKey = PemUtilities.parsePrivateKey(privateKeyString);
+        X509Certificate certPairWithPublic = PemUtilities.parsePublicKeyCertificate(publicKeyCertificateString);
 
 
         //Codes_SRS_IOTHUBSSLCONTEXT_34_018: [This constructor shall generate a temporary password to protect the created keystore holding the private key.]
@@ -175,7 +157,7 @@ public class IotHubSSLContext
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         keystore.load(null);
         keystore.setCertificateEntry(CERTIFICATE_ALIAS, certPairWithPublic);
-        keystore.setKeyEntry(PRIVATE_KEY_ALIAS, certPairWithPrivate.getPrivate(), temporaryPassword, new Certificate[] {certPairWithPublic});
+        keystore.setKeyEntry(PRIVATE_KEY_ALIAS, privateKey, temporaryPassword, new Certificate[] {certPairWithPublic});
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(keystore, temporaryPassword);
